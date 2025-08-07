@@ -25,11 +25,9 @@ public class Products {
             generator = "product_sequence"
     )
 
-    private Long ProductId;
+    private Long productId;
     private String name;
     private double price;
     private int stock;
     private String description;
-
-
 }

@@ -16,7 +16,7 @@ public class UsersService {
     @Autowired
     private UsersRepo usersRepo;
 
-    public List<Users> getallusers() {
+    public List<Users> getAllUsers() {
         return usersRepo.findAll();
     }
 
@@ -29,6 +29,10 @@ public class UsersService {
         return  usersRepo.save(user);
     }
 
+    public List<Users> saveUsers(List<Users> users) {
+        return usersRepo.saveAll(users);
+    }
+
 
     public void deleteUser(Long id) {
         if(!usersRepo.existsById(id)){
@@ -37,5 +41,19 @@ public class UsersService {
         usersRepo.deleteById(id);
     }
 
-}
+    public Users updateUser(Long id , Users user) {
+        return usersRepo.findById(id)
+                .map(existingEntity ->{
+                    existingEntity.setAddress(user.getAddress());
+                    if(!user.getEmailAddress().contains("@")){
+                        throw new IllegalArgumentException("Enter correct email address");
+                    }
+                    existingEntity.setEmailAddress(user.getEmailAddress());
+                    existingEntity.setName(user.getName());
+                    return usersRepo.save(existingEntity);
+                })
+                .orElseThrow( () -> new EntityNotFoundException("Not Found user with user id: "+ id));
+    }
 
+
+}

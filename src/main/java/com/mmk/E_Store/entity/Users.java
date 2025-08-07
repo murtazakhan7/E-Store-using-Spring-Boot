@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails;
 
 import java.util.List;
 
@@ -16,7 +15,7 @@ import java.util.List;
 uniqueConstraints =
 @UniqueConstraint(
         name= "unique_email",
-        columnNames = "emailAddress"
+        columnNames = "email_address"
 ))
 @Data
 @AllArgsConstructor
@@ -39,13 +38,13 @@ public class Users {
     private Long id;
     private String name;
     @Column(
-            name = "Address",
+            name = "address",
             columnDefinition = "varchar",
             nullable = false
     )
     private String address;
     @Column(
-            name = "emailAddress",
+            name = "email_address",
             columnDefinition = "varchar",
             nullable = false,
             unique = true

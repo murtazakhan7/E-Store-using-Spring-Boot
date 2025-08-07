@@ -26,6 +26,9 @@ public class ProductsService {
     public Products saveProduct(Products product) {
         return productsRepo.save(product);
     }
+    public List<Products> saveProducts(List<Products> products) {
+        return productsRepo.saveAll(products);
+    }
 
     public void deleteProduct(Long id) {
         if (!productsRepo.existsById(id)) {
