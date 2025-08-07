@@ -1,5 +1,5 @@
-package com.mmk.E_Store.entity;
 
+package com.mmk.E_Store.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
@@ -7,8 +7,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Entity(name = "OrderItems")
 @Table(name = "OrderItems")
@@ -28,16 +26,22 @@ public class OrderItems {
             generator = "order_item_sequence"
     )
     private Long id;
+
+    @Column(nullable = false)
     private Integer quantity;
-    @ManyToOne(fetch = FetchType.LAZY)
+
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id", referencedColumnName = "productId")
     private Products product;
+
     @Column(name = "price", nullable = false)
     private double price;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", referencedColumnName = "orderId")
     @JsonBackReference
     private Orders order;
+
     @PrePersist
     @PreUpdate
     private void syncPrice() {

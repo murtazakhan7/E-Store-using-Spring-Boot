@@ -1,3 +1,5 @@
+
+
 package com.mmk.E_Store.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -7,8 +9,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Entity(name = "Orders")
 @Table(name = "Orders")
@@ -29,29 +31,47 @@ public class Orders {
             generator = "order_sequence"
     )
     private Long orderId;
+
     @Column(
             name = "status",
             columnDefinition = "VARCHAR",
             nullable = false
     )
     private String status;
+
     private double totalAmount;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JsonManagedReference
-    private List<OrderItems> orderItems;
+    @Builder.Default // Important for Lombok Builder
+    private List<OrderItems> orderItems = new ArrayList<>();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(
             name = "user_id",
             referencedColumnName = "id"
     )
     private Users user;
 
+    // Helper method to add order items and maintain bidirectional relationship
+    public void addOrderItem(OrderItems orderItem) {
+        if (orderItems == null) {
+            orderItems = new ArrayList<>();
+        }
+        orderItems.add(orderItem);
+        orderItem.setOrder(this);
+    }
 
+    // Helper method to remove order items
+    public void removeOrderItem(OrderItems orderItem) {
+        if (orderItems != null) {
+            orderItems.remove(orderItem);
+            orderItem.setOrder(null);
+        }
+    }
 
-    @Transient
-    public double getTotalAmount() {
+    // Calculate total amount (removed @Transient since we want to persist it)
+    public double calculateTotalAmount() {
         if (orderItems == null) {
             return 0.0;
         }
@@ -64,8 +84,6 @@ public class Orders {
     @PrePersist
     @PreUpdate
     private void updateTotalAmount() {
-        this.totalAmount = getTotalAmount();
+        this.totalAmount = calculateTotalAmount();
     }
-
-
 }
