@@ -51,6 +51,7 @@ public class Users {
             unique = true
     )
     private String emailAddress;
+    private String username;
 
     @Column(nullable = false)
     private String password;

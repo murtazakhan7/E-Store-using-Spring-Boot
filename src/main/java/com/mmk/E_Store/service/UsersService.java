@@ -3,8 +3,14 @@ package com.mmk.E_Store.service;
 import com.mmk.E_Store.entity.Users;
 import com.mmk.E_Store.exception.UserNotFoundException;
 import com.mmk.E_Store.repository.UsersRepo;
+import com.mmk.E_Store.securityconfig.JWTService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,8 +19,31 @@ import java.util.Optional;
 @Service
 public class UsersService {
 
-    @Autowired
-    private UsersRepo usersRepo;
+    private final UsersRepo usersRepo;
+    private final PasswordEncoder passwordEncoder;
+
+
+    public UsersService(UsersRepo usersRepo,
+                         PasswordEncoder passwordEncoder
+                        ) {
+        this.usersRepo = usersRepo;
+        this.passwordEncoder = passwordEncoder;
+
+    }
+
+
+
+    public void upgradePasswordIfNecessary(Users user, String rawPassword) {
+        if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
+            if (rawPassword.equals(user.getPassword())) {
+                // Password in plain text — auto upgrade
+                String encoded = passwordEncoder.encode(rawPassword);
+                usersRepo.updatePasswordByUsername(user.getUsername(), encoded);
+            } else {
+                throw new BadCredentialsException("Invalid credentials");
+            }
+        }
+    }
 
     public List<Users> getAllUsers() {
         return usersRepo.findAll();
@@ -26,10 +55,12 @@ public class UsersService {
     }
 
     public Users saveUser(Users user){
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         return  usersRepo.save(user);
     }
 
     public List<Users> saveUsers(List<Users> users) {
+        users.forEach(u -> u.setPassword(passwordEncoder.encode(u.getPassword())));
         return usersRepo.saveAll(users);
     }
 
@@ -54,6 +85,7 @@ public class UsersService {
                 })
                 .orElseThrow( () -> new EntityNotFoundException("Not Found user with user id: "+ id));
     }
+
 
 
 }
